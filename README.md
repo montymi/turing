@@ -141,7 +141,7 @@ my_audio_lib/
 - [ ] Structure project for easier growth
 - [ ] Include STT portion of pipeline
 
-See the [open issues](https://github.com/montymi/ClearDocs/issues) for a full list of issues and proposed features.
+See the [open issues](https://github.com/montymi/turing/issues) for a full list of issues and proposed features.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -191,11 +191,11 @@ Use this space to list any resources used or that may be helpful in understandin
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [demoLogo]: https://img.shields.io/badge/🚀%20Explore%20Demo-grey?style=for-the-badge
-[demoLogo-url]: https://github.com/montymi/ClearDocs
+[demoLogo-url]: https://github.com/montymi/turing
 [bugLogo]: https://img.shields.io/badge/🐛%20Report%20Bug-grey?style=for-the-badge
-[bugLogo-url]: https://github.com/montymi/ClearDocs/issues
+[bugLogo-url]: https://github.com/montymi/turing/issues
 [featureLogo]: https://img.shields.io/badge/✨%20Request%20Feature-grey?style=for-the-badge
-[featureLogo-url]: https://github.com/montymi/ClearDocs/issues
+[featureLogo-url]: https://github.com/montymi/turing/issues
 [pythonLogo]: https://img.shields.io/badge/Python-black?style=for-the-badge&logo=python&logoColor=natural
 [pythonLogo-url]: https://python.org/
 [openaiLogo]: https://img.shields.io/badge/Whisper-black?style=for-the-badge&logo=openai&logoColor=natural
@@ -208,16 +208,16 @@ Use this space to list any resources used or that may be helpful in understandin
 [htmlLogo-url]: https://html.spec.whatwg.org/
 [creatorLogo]: https://img.shields.io/badge/-Created%20by%20montymi-maroon.svg?style=for-the-badge
 [creatorProfile]: https://montymi.com/
-[contributors-shield]: https://img.shields.io/github/contributors/montymi/ClearDocs.svg?style=for-the-badge
-[contributors-url]: https://github.com/montymi/ClearDocs/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/montymi/ClearDocs.svg?style=for-the-badge
-[forks-url]: https://github.com/montymi/ClearDocs/network/members
-[stars-shield]: https://img.shields.io/github/stars/montymi/ClearDocs.svg?style=for-the-badge
-[stars-url]: https://github.com/montymi/ClearDocs/stargazers
-[issues-shield]: https://img.shields.io/github/issues/montymi/ClearDocs.svg?style=for-the-badge
-[issues-url]: https://github.com/montymi/ClearDocs/issues
-[license-shield]: https://img.shields.io/github/license/montymi/ClearDocs.svg?style=for-the-badge
-[license-url]: https://github.com/montymi/ClearDocs/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/montymi/turing.svg?style=for-the-badge
+[contributors-url]: https://github.com/montymi/turing/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/montymi/turing.svg?style=for-the-badge
+[forks-url]: https://github.com/montymi/turing/network/members
+[stars-shield]: https://img.shields.io/github/stars/montymi/turing.svg?style=for-the-badge
+[stars-url]: https://github.com/montymi/turing/stargazers
+[issues-shield]: https://img.shields.io/github/issues/montymi/turing.svg?style=for-the-badge
+[issues-url]: https://github.com/montymi/turing/issues
+[license-shield]: https://img.shields.io/github/license/montymi/turing.svg?style=for-the-badge
+[license-url]: https://github.com/montymi/turing/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin
 [linkedin-url]: https://linkedin.com/in/michael-montanaro
 [github-shield]: https://img.shields.io/badge/-GitHub-black.svg?style=for-the-badge&logo=github
