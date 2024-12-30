@@ -1,177 +1,71 @@
-from TTS.api import TTS
-import shutil
-import subprocess
-import os
-from microphone import Microphone
-from datetime import datetime
-
-
-class Linguist:
-    def __init__(self, model_name="tts_models/multilingual/multi-dataset/your_tts", use_gpu=False, output_file="output.wav", archive="archive"):
-        self.tts = TTS(model_name=model_name, gpu=use_gpu)
-        self.default_output = output_file
-        self.language = None
-        self.speaker_file = None
-        self.speaker = None
-        self.archive = archive
-        self.mic = Microphone(archive=archive)
-
-    def list_languages(self):
-        """List available languages for the TTS model."""
-        return self.tts.languages
-
-    def set_language(self, lang):
-        """Set the language for the TTS model."""
-        if lang in self.tts.languages:
-            self.language = lang
-            print(f"Language set to: {lang}")
-        else:
-            print(f"Error: Language '{lang}' is not supported.")
-
-    def list_speakers(self):
-        """List available speakers for the TTS model."""
-        return self.tts.speakers
-
-    def set_speaker(self, speaker_name):
-        """Set the speaker for the TTS model."""
-        # Clean and filter out empty speakers
-        speakers = [speaker.strip() for speaker in self.tts.speakers if speaker.strip()]
-        if speaker_name in speakers:
-            self.speaker = speaker_name
-            print(f"Speaker set to: {speaker_name}")
-        else:
-            print(f"Error: Speaker '{speaker_name}' is not available. Defaulting to first speaker.")
-            self.speaker = speakers[0] if speakers else None
-
-    def set_speaker_embedding(self, audio_path):
-        """Set the speaker embedding from a reference audio file."""
-
-        if not audio_path or not os.path.join(self.archive, audio_path):
-            print(f"Error: Invalid reference audio path: {audio_path}")
-            return
-        self.speaker_file = os.path.join(self.archive, audio_path)
-        print("Speaker embedding set successfully.")
-
-    def record(self, words: str, output_path=None):
-        """Generate speech from text with optional language and speaker embedding."""
-        output_path = output_path or self.default_output
-        try:
-            if self.speaker_file:
-                self.tts.tts_to_file(
-                    text=words,
-                    file_path=output_path,
-                    speaker_wav=self.speaker_file,
-                    language=self.language,
-                )
-            else:
-                self.tts.tts_to_file(
-                    text=words,
-                    speaker=self.speaker,
-                    file_path=output_path,
-                    language=self.language,
-                )
-            print(f"Speech saved to {output_path}")
-        except Exception as e:
-            print(f"Error during recording: {e}")
-
-    def say(self, path=None):
-        """Play the generated audio using 'afplay'."""
-        path = path or self.default_output
-        if not self._is_afplay_available():
-            print("Error: 'afplay' command is not available. Please install or use another player.")
-            return
-        try:
-            subprocess.run(["afplay", path], check=True)
-            self.speaker_file = None
-        except subprocess.CalledProcessError as e:
-            print(f"Error: Unable to play audio. Details: {e}")
-
-    @staticmethod
-    def _is_afplay_available():
-        """Check if 'afplay' is available on the system."""
-        return shutil.which("afplay") is not None
-
+import argparse
+from linguist import Linguist
 
 def main():
-    linguist = Linguist()
+    parser = argparse.ArgumentParser(description="CLI for TTS and STT using Linguist")
+    subparsers = parser.add_subparsers(dest="command")
+    
+    # Configuration
+    parser.add_argument("--use_gpu", action="store_true", help="Flag to use GPU for TTS")
+    parser.add_argument("--output_file", type=str, default="output.wav", help="Output file for TTS")
+    parser.add_argument("--archive", type=str, default="archive", help="Archive directory for TTS")
+    parser.add_argument("--coqui_model", type=str, default="tts_models/multilingual/multi-dataset/your_tts", help="Model name for Coqui-AI TTS")
+    parser.add_argument("--whisper_model", type=str, default="base", help="Whisper model for STT")
 
-    while True:
-        # Step 0: Record User for Voice Cloning
-        try:
-            selection = input("Record audio clip for voice cloning? (y/N): ") or 'N'
-            if selection.lower() in ['y', 'yes']:
-                name = input("Name the audio clip (ENTER for datetime): ") or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                linguist.mic.record(file=name)
-        except Exception as e:
-            print(f"Error during recording: {e}")
+    # Speak command
+    speak_parser = subparsers.add_parser("speak", help="Convert text to speech")
+    speak_parser.add_argument("text", type=str, help="Text to convert to speech")
+    speak_parser.add_argument("--language", type=str, help="Language for TTS")
+    speak_parser.add_argument("--speaker", type=str, help="Speaker for TTS")
 
-        # Step 1: Set Language
-        try:
-            print("Available Languages:")
-            languages = linguist.list_languages()
-            if languages:
-                [print(lang) for lang in languages]
-                selected_language = input("Select a language (ENTER for Default): ")
-                if selected_language in languages:
-                    linguist.set_language(selected_language)
-                else:
-                    print("Invalid language selected. Defaulting to first available language.")
-                    linguist.set_language(languages[0])
-            else:
-                print("No languages available for this model.")
-        except Exception as e:
-            print(f"Error during language selection: {e}")
+    # Listen command
+    listen_parser = subparsers.add_parser("listen", help="Convert speech to text")
+    listen_parser.add_argument("--print", action="store_true", default=True, help="Flag to print the recognized text")
+    listen_parser.add_argument("--duration", type=int, default=5, help="Duration of recording in seconds")
 
-        # Step 2: Set Speaker (Optional)
-        try:
-            print("Available Speakers:")
-            speakers = [speaker for speaker in linguist.list_speakers() if speaker]
-            if speakers:
-                [print(speaker) for speaker in speakers]
-                selected_speaker = input(f"Select a speaker (ENTER for Default '{speakers[0]}'): ") or speakers[0]
-                linguist.set_speaker(selected_speaker)
-            else:
-                print("No speakers available for this model. Defaulting to the first available speaker.")
-                linguist.set_speaker(speakers[0] if speakers else None)
-        except Exception as e:
-            print(f"Error during speaker selection: {e}")
+    # Help command
+    help_parser = subparsers.add_parser("help", help="Show help message")
+    help_parser.set_defaults(func=lambda _: parser.print_help())
 
-        # Step 3: Set Speaker Embedding (Optional)
-        try:
-            linguist.mic.samples()
-            ref_audio = input("Provide path to reference audio for voice cloning (ENTER to skip): ")
-            if ref_audio:
-                linguist.set_speaker_embedding(ref_audio)
-        except Exception as e:
-            print(f"Error during speaker embedding: {e}")
+    args = parser.parse_args()
 
-        # Step 4: Record Speech
-        try:
-            text = input("Enter text to convert to speech: ")
-            linguist.record(text)
-        except Exception as e:
-            print(f"Error during speech recording: {e}")
+    # Initialize Linguist with the provided arguments
+    linguist = Linguist(
+        use_gpu=args.use_gpu,
+        output_file=args.output_file,
+        archive=args.archive,
+        coqui_model=args.coqui_model,
+        whisper_model=args.whisper_model
+    )
 
-        # Step 5: Play the Audio
-        try:
-            linguist.say()
-        except Exception as e:
-            print(f"Error during audio playback: {e}")
+    # Handle commands
+    if args.command == "speak":
 
-        # Ask if the user wants to repeat the process
-        again = input("\nWould you like to do another? (y/N): ").lower()
-        if again.lower() not in ['y', 'yes']:
-            print("Exiting program.")
-            break
+        # Set language and speaker if provided
+        if args.language:
+            linguist.set_language(args.language)
+        if args.speaker:
+            linguist.set_speaker(args.speaker)
 
+        # Generate speech from text
+        linguist.speak(args.text)
+
+    elif args.command == "listen":
+
+        # Record audio until 'q' key press
+        audio = linguist.listen(duration=args.duration)
+
+        # Transcribe the recorded audio file
+        text = linguist.transcribe(audio)
+
+        # Print the transcribed text if the flag is set (default: True)
+        if args.print:
+            print(f"Transcription:\n\n{text}")
+
+    else:
+
+        # Show help message
+        parser.print_help()
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        selection = input("\nAborted session. Would you like to restart? (y/N): ")
-        if selection.lower() not in ['y', 'yes']:
-            print("Exiting program.")
-            exit()   
-        print("Restarting Linguist and Microphone")
-        main()
+    main()

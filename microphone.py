@@ -13,9 +13,9 @@ class Microphone:
         self.channels = 1  # Mono audio
         self.p = pyaudio.PyAudio()
 
-    def record(self, file: str):
+    def record(self, file: str, stop_key='q'):
         """Record audio from the microphone until a key press is detected."""
-        print("Recording... Press 'q' to stop.")
+        print(f"Recording... Press '{stop_key}' to stop.")
         stream = self.p.open(format=self.format,
                              channels=self.channels,
                              rate=self.sample_rate,
@@ -25,7 +25,7 @@ class Microphone:
 
         frames = []
         while True:
-            if keyboard.is_pressed('q'):  # Stop recording on 'q' key press
+            if keyboard.is_pressed(stop_key):  # Stop recording on 'q' key press
                 print("Recording stopped.")
                 break
             data = stream.read(self.chunk_size)
@@ -36,7 +36,6 @@ class Microphone:
 
         # Save the recorded audio to the specified file
         path = os.path.join(self.archive, file)
-        import pdb; pdb.set_trace()
         with wave.open(path, 'wb') as wf:
             wf.setnchannels(self.channels)
             wf.setsampwidth(self.p.get_sample_size(self.format))
