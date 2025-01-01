@@ -9,7 +9,7 @@
 [![GPL License][license-shield]][license-url]
 
 <!-- PROJECT HEADER -->
-# Turing
+# Linguist
 
 A local TTS & STT python library powered by Coqui and Whisper.
 
