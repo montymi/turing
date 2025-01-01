@@ -1,3 +1,4 @@
+import logging
 from TTS.api import TTS
 import shutil
 import subprocess
@@ -7,7 +8,15 @@ from datetime import datetime
 import whisper
 
 class Linguist:
-    def __init__(self, coqui_model="tts_models/multilingual/multi-dataset/your_tts", use_gpu=False, output_file="output.wav", archive="archive", whisper_model="base"):
+    def __init__(
+            self, 
+            coqui_model="tts_models/multilingual/multi-dataset/your_tts", 
+            use_gpu=False, 
+            output_file="output.wav", 
+            archive="archive", 
+            whisper_model="base"
+        ):
+        logging.getLogger("TTS").setLevel(logging.WARNING)
         self.tts = TTS(model_name=coqui_model, gpu=use_gpu)
         self.default_output = output_file
         self.language = None
@@ -16,6 +25,7 @@ class Linguist:
         self.archive = archive
         self.mic = Microphone(archive=archive)
         self.whisper_model = whisper.load_model(whisper_model)
+        logging.getLogger("TTSTTS").setLevel(logging.INFO)
 
 
     def list_languages(self):
@@ -93,22 +103,32 @@ class Linguist:
         """Check if 'afplay' is available on the system."""
         return shutil.which("afplay") is not None
     
-    def speak(self, text: str):
+    def speak(self, text: str, name: str=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")):
         """Convert text to speech and play it."""
-        self.record(text)
-        self.say()
+        try:
+            self.record(text, name)
+            self.say(name)
+        except KeyboardInterrupt:
+            print("Speaker interrupted. Exiting...")
 
-    def listen(self, duration: int) -> str:
+    def listen(self, name: str=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) -> str:
         """Record audio for a given duration."""
-        name = input("Name the recording (ENTER for datetime): ") or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.mic.record(file=name)
+        try:
+            if name == "":
+                name = input("Name the recording (ENTER for datetime): ") or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            self.mic.record(file=name)
+        except KeyboardInterrupt:
+            print("Recording interrupted. Exiting...")
         return name
 
     def transcribe(self, file: str) -> str:
         """Transcribe recorded audio to text."""
-        result = self.whisper_model.transcribe(file)
-        print("Transcription complete.")
-        return result["text"]
+        try:
+            result = self.whisper_model.transcribe(file)
+            print("Transcription complete.")
+            return result["text"]
+        except KeyboardInterrupt:
+            print("Transcription interrupted. Exiting...")
     
 
 def main():
