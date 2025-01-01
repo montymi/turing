@@ -53,7 +53,7 @@ def main():
     elif args.command == "listen":
 
         # Record audio until 'q' key press
-        audio = linguist.listen(duration=args.duration)
+        audio = linguist.listen()
 
         # Transcribe the recorded audio file
         text = linguist.transcribe(audio)
