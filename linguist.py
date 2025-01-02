@@ -1,4 +1,3 @@
-import logging
 from TTS.api import TTS
 import shutil
 import subprocess
@@ -16,17 +15,19 @@ class Linguist:
             archive="archive", 
             whisper_model="base"
         ):
-        logging.getLogger("TTS").setLevel(logging.WARNING)
-        self.tts = TTS(model_name=coqui_model, gpu=use_gpu)
+        self.coqui_model = coqui_model
+        self.use_gpu = use_gpu
+        self.whisper_model = whisper_model
         self.default_output = output_file
         self.language = None
         self.speaker_file = None
         self.speaker = None
         self.archive = archive
-        self.mic = Microphone(archive=archive)
-        self.whisper_model = whisper.load_model(whisper_model)
-        logging.getLogger("TTSTTS").setLevel(logging.INFO)
 
+    def init(self):
+        self.tts = TTS(model_name=self.coqui_model, gpu=self.use_gpu)
+        self.mic = Microphone(archive=self.archive)
+        self.whisper_model = whisper.load_model(self.whisper_model)
 
     def list_languages(self):
         """List available languages for the TTS model."""
@@ -76,6 +77,9 @@ class Linguist:
                     language=self.language,
                 )
             else:
+                self.speaker = self.speaker or self.tts.speakers[0]
+                self.language = self.language or self.tts.languages[0]
+                
                 self.tts.tts_to_file(
                     text=words,
                     speaker=self.speaker,
@@ -124,7 +128,10 @@ class Linguist:
     def transcribe(self, file: str) -> str:
         """Transcribe recorded audio to text."""
         try:
-            result = self.whisper_model.transcribe(file)
+            audio_path = os.path.join(self.archive, file)
+            if not os.path.exists(audio_path):
+                raise FileNotFoundError(f"Audio file not found: {audio_path}")
+            result = self.whisper_model.transcribe(audio_path)
             print("Transcription complete.")
             return result["text"]
         except KeyboardInterrupt:

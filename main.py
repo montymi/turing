@@ -29,41 +29,43 @@ def main():
 
     args = parser.parse_args()
 
-    # Initialize Linguist with the provided arguments
-    linguist = Linguist(
-        use_gpu=args.use_gpu,
-        output_file=args.output_file,
-        archive=args.archive,
-        coqui_model=args.coqui_model,
-        whisper_model=args.whisper_model
-    )
+    if args.command in ["speak", "listen"]:
+        # Initialize Linguist with the provided arguments
+        linguist = Linguist(
+            use_gpu=args.use_gpu,
+            output_file=args.output_file,
+            archive=args.archive,
+            coqui_model=args.coqui_model,
+            whisper_model=args.whisper_model
+        )
 
-    # Handle commands
-    if args.command == "speak":
+        linguist.init()
 
-        # Set language and speaker if provided
-        if args.language:
-            linguist.set_language(args.language)
-        if args.speaker:
-            linguist.set_speaker(args.speaker)
+        # Handle commands
+        if args.command == "speak":
 
-        # Generate speech from text
-        linguist.speak(args.text)
+            # Set language and speaker if provided
+            if args.language:
+                linguist.set_language(args.language)
+            if args.speaker:
+                linguist.set_speaker(args.speaker)
 
-    elif args.command == "listen":
+            # Generate speech from text
+            linguist.speak(args.text)
 
-        # Record audio until 'q' key press
-        audio = linguist.listen()
+        elif args.command == "listen":
 
-        # Transcribe the recorded audio file
-        text = linguist.transcribe(audio)
+            # Record audio until 'q' key press
+            audio = linguist.listen()
 
-        # Print the transcribed text if the flag is set (default: True)
-        if args.print:
-            print(f"Transcription:\n\n{text}")
+            # Transcribe the recorded audio file
+            text = linguist.transcribe(audio)
+
+            # Print the transcribed text if the flag is set (default: True)
+            if args.print:
+                print(f"Transcription:\n\n{text}")
 
     else:
-
         # Show help message
         parser.print_help()
 
