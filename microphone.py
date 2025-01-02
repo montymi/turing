@@ -1,7 +1,6 @@
 import os
 import wave
 import pyaudio
-import keyboard  # Requires `keyboard` library for detecting key press
 
 class Microphone:
     def __init__(self, archive="archive", device_index=None):
@@ -9,13 +8,13 @@ class Microphone:
         self.device_index = device_index  # Optional: Use a specific microphone device
         self.sample_rate = 16000
         self.chunk_size = 1024  # Buffer size for audio chunks
-        self.format = pyaudio.paInt16  # Audio format
+        self.format = pyaudio.paInt32  # Audio format
         self.channels = 1  # Mono audio
         self.p = pyaudio.PyAudio()
 
-    def record(self, file: str, stop_key='q'):
-        """Record audio from the microphone until a key press is detected."""
-        print(f"Recording... Press '{stop_key}' to stop.")
+    def record(self, file: str):
+        """Record audio from the microphone until user input is detected."""
+        print("Recording... Press Enter to stop.")
         stream = self.p.open(format=self.format,
                              channels=self.channels,
                              rate=self.sample_rate,
@@ -25,11 +24,11 @@ class Microphone:
 
         frames = []
         while True:
-            if keyboard.is_pressed(stop_key):  # Stop recording on 'q' key press
-                print("Recording stopped.")
-                break
             data = stream.read(self.chunk_size)
             frames.append(data)
+            if input() == '':  # Stop recording on Enter key press
+                print("Recording stopped.")
+                break
 
         stream.stop_stream()
         stream.close()
@@ -49,5 +48,3 @@ class Microphone:
     def __del__(self):
         """Ensure proper cleanup of resources."""
         self.p.terminate()
-
-
