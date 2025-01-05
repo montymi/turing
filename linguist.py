@@ -107,7 +107,7 @@ class Linguist:
         """Check if 'afplay' is available on the system."""
         return shutil.which("afplay") is not None
     
-    def speak(self, text: str, name: str=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")):
+    def speak(self, text: str, name: str=datetime.now().strftime("%Y-%m-%d@%H:%M:%S")):
         """Convert text to speech and play it."""
         try:
             self.record(text, name)
@@ -115,7 +115,7 @@ class Linguist:
         except KeyboardInterrupt:
             print("Speaker interrupted. Exiting...")
 
-    def listen(self, name: str=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) -> str:
+    def listen(self, name: str=datetime.now().strftime("%Y-%m-%d@%H:%M:%S")+'.wav') -> str:
         """Record audio for a given duration."""
         try:
             if name == "":
