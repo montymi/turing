@@ -59,11 +59,7 @@ def main():
             audio = linguist.listen()
 
             # Transcribe the recorded audio file
-            text = linguist.transcribe(audio)
-
-            # Print the transcribed text if the flag is set (default: True)
-            if args.print:
-                print(f"Transcription:\n\n{text}")
+            text = linguist.transcribe(audio, show_text=args.print)
 
     else:
         # Show help message
