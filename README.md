@@ -9,7 +9,7 @@
 [![GPL License][license-shield]][license-url]
 
 <!-- PROJECT HEADER -->
-# linguist
+# Linguist
 
 A local TTS & STT python library powered by Coqui and Whisper.
 
@@ -141,7 +141,7 @@ my_audio_lib/
 - [ ] Structure project for easier growth
 - [ ] Include STT portion of pipeline
 
-See the [open issues](https://github.com/montymi/linguist/issues) for a full list of issues and proposed features.
+See the [open issues][bugLogo-url] for a full list of issues and proposed features.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
