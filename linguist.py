@@ -15,7 +15,7 @@ class Linguist:
             self, 
             coqui_model="tts_models/multilingual/multi-dataset/your_tts", 
             use_gpu=False, 
-            output_file="output.wav", 
+            output_file="output", 
             archive="archive", 
             whisper_model="base"
         ):
@@ -28,17 +28,25 @@ class Linguist:
         self.speaker = None
         self.archive = archive
 
-    def __init_TTS__(self):
-        sys.stdout = open(os.devnull, 'w')
-        sys.stderr = open(os.devnull, 'w')
-        self.tts = TTS(model_name=self.coqui_model, gpu=self.use_gpu, progress_bar=False)
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
-
-    def init(self):
-        self.tts = self.__init_TTS__()
-        self.mic = Microphone(archive=self.archive)
+    def init(self, debug: bool=False):
+        self.debug = debug
+        self.tts = self.__TTS__(debug)
+        self.mic = Microphone()
         self.whisper_model = whisper.load_model(self.whisper_model)
+
+    def __TTS__(self, debug):
+        if not debug:
+            sys.stdout = open(os.devnull, 'w')
+            sys.stderr = open(os.devnull, 'w')
+            tts = TTS(model_name=self.coqui_model, gpu=self.use_gpu, progress_bar=False)
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+        else:
+            tts = TTS(model_name=self.coqui_model, gpu=self.use_gpu, progress_bar=True)
+        return tts
+
+    def stamp(self):
+        return datetime.now().strftime("%Y-%m-%d@%H:%M:%S")
 
     def list_languages(self):
         """List available languages for the TTS model."""
@@ -76,34 +84,47 @@ class Linguist:
         self.speaker_file = os.path.join(self.archive, audio_path)
         print("Speaker embedding set successfully.")
 
-    def record(self, words: str, output_path=None):
+    def record(self, words: str, tag=None):
         """Generate speech from text with optional language and speaker embedding."""
-        output_path = output_path or self.default_output
+        if not tag:
+            tag = self.default_output
+        if not tag.endswith(".wav"):
+            output_file = tag + ".wav"
+        else:
+            output_file = tag
         try:
+            if not self.debug:
+                sys.stdout = open(os.devnull, 'w')
+                sys.stderr = open(os.devnull, 'w')
             if self.speaker_file:
                 self.tts.tts_to_file(
                     text=words,
-                    file_path=output_path,
+                    file_path=output_file,
                     speaker_wav=self.speaker_file,
                     language=self.language,
                 )
             else:
-                self.speaker = self.speaker or self.tts.speakers[0]
+                self.speaker = self.speaker or self.tts.speakers[1]
                 self.language = self.language or self.tts.languages[0]
                 
                 self.tts.tts_to_file(
                     text=words,
                     speaker=self.speaker,
-                    file_path=output_path,
+                    file_path=output_file,
                     language=self.language,
                 )
-            print(f"Speech saved to {output_path}")
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+            print(f"📂 Speech saved to: {tag} ✅\n")
         except Exception as e:
             print(f"Error during recording: {e}")
 
     def say(self, path=None):
         """Play the generated audio using 'afplay'."""
-        path = path or self.default_output
+        if not path:
+            path = self.default_output
+        if not path.endswith(".wav"):
+            path = path + ".wav"
         if not self._is_afplay_available():
             print("Error: 'afplay' command is not available. Please install or use another player.")
             return
@@ -118,20 +139,30 @@ class Linguist:
         """Check if 'afplay' is available on the system."""
         return shutil.which("afplay") is not None
     
-    def speak(self, text: str, name: str=datetime.now().strftime("%Y-%m-%d@%H:%M:%S")):
+    def speak(self, text: str, tag: str=None):
         """Convert text to speech and play it."""
         try:
-            self.record(text, name)
-            self.say(name)
+            if not tag:
+                tag = input("Name the recording (ENTER for datetime): ") or self.stamp()
+            if not tag.endswith(".wav"):
+                path = os.path.join(self.archive, tag + ".wav")
+            else:
+                path = os.path.join(self.archive, tag)
+            self.record(text, path)
+            self.say(path)
         except KeyboardInterrupt:
             print("Speaker interrupted. Exiting...")
 
-    def listen(self, name: str=datetime.now().strftime("%Y-%m-%d@%H:%M:%S")+'.wav') -> str:
+    def listen(self, tag: str=None) -> str:
         """Record audio for a given duration."""
         try:
-            if name == "":
-                name = input("Name the recording (ENTER for datetime): ") or datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            self.mic.record(file=name)
+            if not tag:
+                tag = input("Name the recording (ENTER for datetime): ") or self.stamp()
+            if not tag.endswith(".wav"):
+                name = os.path.join(self.archive, tag + ".wav")
+            else:
+                name = os.path.join(self.archive, tag)
+            self.mic.record(output_file=name)
         except KeyboardInterrupt:
             print("Recording interrupted. Exiting...")
         return name
@@ -139,16 +170,15 @@ class Linguist:
     def transcribe(self, file: str, show_text: bool) -> str:
         """Transcribe recorded audio to text."""
         try:
-            audio_path = os.path.join(self.archive, file)
-            if not os.path.exists(audio_path):
-                raise FileNotFoundError(f"Audio file not found: {audio_path}")
+            if not os.path.exists(file):
+                raise FileNotFoundError(f"Audio file not found: {file}")
             print("📝 Transcribing audio... Press Ctrl+C to stop. 🔊")
-            result = self.whisper_model.transcribe(audio_path)
+            result = self.whisper_model.transcribe(file)
             text = result["text"]
             if text:
                 print(f"\n📜 Transcription successful ✅")
             if show_text and text:
-                print(f"\n❝{text} ❞")
+                print(f"\n❝{text} ❞\n")
             return text
         except KeyboardInterrupt:
             print("Transcription interrupted. Exiting...")
