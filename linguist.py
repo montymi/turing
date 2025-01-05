@@ -2,9 +2,13 @@ from TTS.api import TTS
 import shutil
 import subprocess
 import os
+import sys
 from microphone import Microphone
 from datetime import datetime
 import whisper
+import warnings
+
+warnings.filterwarnings("ignore", message="FP16 is not supported on CPU; using FP32 instead") # Ignore FP16 warning because it defaults to FP32
 
 class Linguist:
     def __init__(
@@ -24,8 +28,15 @@ class Linguist:
         self.speaker = None
         self.archive = archive
 
+    def __init_TTS__(self):
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+        self.tts = TTS(model_name=self.coqui_model, gpu=self.use_gpu, progress_bar=False)
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+
     def init(self):
-        self.tts = TTS(model_name=self.coqui_model, gpu=self.use_gpu)
+        self.tts = self.__init_TTS__()
         self.mic = Microphone(archive=self.archive)
         self.whisper_model = whisper.load_model(self.whisper_model)
 
@@ -125,17 +136,26 @@ class Linguist:
             print("Recording interrupted. Exiting...")
         return name
 
-    def transcribe(self, file: str) -> str:
+    def transcribe(self, file: str, show_text: bool) -> str:
         """Transcribe recorded audio to text."""
         try:
             audio_path = os.path.join(self.archive, file)
             if not os.path.exists(audio_path):
                 raise FileNotFoundError(f"Audio file not found: {audio_path}")
+            print("📝 Transcribing audio... Press Ctrl+C to stop. 🔊")
             result = self.whisper_model.transcribe(audio_path)
-            print("Transcription complete.")
-            return result["text"]
+            text = result["text"]
+            if text:
+                print(f"\n📜 Transcription successful ✅")
+            if show_text and text:
+                print(f"\n❝{text} ❞")
+            return text
         except KeyboardInterrupt:
             print("Transcription interrupted. Exiting...")
+            return ""
+        except Exception as e:
+            print(f"Error during transcription: {e}")
+            return ""
     
 
 def main():
