@@ -4,8 +4,7 @@ import pyaudio
 import threading
 
 class Microphone:
-    def __init__(self, archive="archive", device_index=None):
-        self.archive = archive
+    def __init__(self, device_index=None):
         self.device_index = device_index  # Optional: Use a specific microphone device
         self.sample_rate = 16000
         self.chunk_size = 1024  # Buffer size for audio chunks
@@ -13,7 +12,7 @@ class Microphone:
         self.channels = 1  # Mono audio
         self.p = pyaudio.PyAudio()
 
-    def record(self, file: str):
+    def record(self, output_file: str):
         """Record audio from the microphone until user input is detected."""
         print("🎤 Recording in progress... Press Enter to stop. 🔴")
         stream = self.p.open(format=self.format,
@@ -44,14 +43,14 @@ class Microphone:
         stream.close()
 
         # Save the recorded audio to the specified file
-        path = os.path.join(self.archive, file)
-        with wave.open(path, 'wb') as wf:
+        with wave.open(output_file, 'wb') as wf:
             wf.setnchannels(self.channels)
             wf.setsampwidth(self.p.get_sample_size(self.format))
             wf.setframerate(self.sample_rate)
             wf.writeframes(b''.join(frames))
 
     def samples(self):
+        """List all recorded audio samples in the archive directory."""
         print("Input Samples:")
         [print(file) for file in os.listdir(self.archive)]
 
