@@ -167,7 +167,7 @@ class Linguist:
             print("Recording interrupted. Exiting...")
         return name
 
-    def transcribe(self, file: str, show_text: bool) -> str:
+    def transcribe(self, file: str, show_text: bool, tag: str=None) -> str:
         """Transcribe recorded audio to text."""
         try:
             if not os.path.exists(file):
@@ -179,6 +179,12 @@ class Linguist:
                 print(f"\n📜 Transcription successful ✅")
             if show_text and text:
                 print(f"\n❝{text} ❞\n")
+            if tag:
+                if not tag.endswith(".txt"):
+                    tag += ".txt"
+                with open(os.path.join(self.archive, tag), 'w') as f:
+                    f.write(text)
+                print(f"📂 Transcription saved to: {tag} ✅\n")
             return text
         except KeyboardInterrupt:
             print("Transcription interrupted. Exiting...")

@@ -27,13 +27,19 @@ def main():
     listen_parser.add_argument("--print", action="store_true", default=True, help="Flag to print the recognized text")
     listen_parser.add_argument("--tag", type=str, help="Tag the recorded audio file")
 
+    # Transcribe command
+    transcribe_parser = subparsers.add_parser("transcribe", help="Transcribe audio file to text")
+    transcribe_parser.add_argument("--file_path", type=str, required=True, help="Path to the audio file to transcribe")
+    transcribe_parser.add_argument("--print", action="store_true", default=True, help="Flag to print the transcribed text")
+    transcribe_parser.add_argument("--tag", type=str, help="Tag the transcribed audio file")
+
     # Help command
     help_parser = subparsers.add_parser("help", help="Show help message")
     help_parser.set_defaults(func=lambda _: parser.print_help())
 
     args = parser.parse_args()
 
-    if args.command in ["speak", "listen"]:
+    if args.command in ["speak", "listen", "transcribe"]:
         # Initialize Linguist with the provided arguments
         linguist = Linguist(
             use_gpu=args.use_gpu,
@@ -63,6 +69,10 @@ def main():
 
             # Transcribe the recorded audio file
             text = linguist.transcribe(audio, show_text=args.print)
+
+        elif args.command == "transcribe":
+            # Transcribe the provided audio file
+            text = linguist.transcribe(args.file_path, show_text=args.print, tag=args.tag)
 
     else:
         # Show help message
