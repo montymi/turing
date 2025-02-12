@@ -1,0 +1,10 @@
+
+services:
+  linguist:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - .:/app
+    environment:
+      - NAME=Linguist
