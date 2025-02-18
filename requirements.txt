@@ -1,4 +1,4 @@
-TTS
+# TTS replaced by @packages/tts
 openai-whisper
 keyboard
 pyaudio
