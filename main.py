@@ -1,15 +1,13 @@
 import argparse
-from linguist import Linguist
+from src.linguist import Linguist
 import logging
 
 def main():
     # Debug command
     parser = argparse.ArgumentParser(description="CLI for TTS and STT using Linguist")
     # Configuration
-    parser.add_argument("--use_gpu", action="store_true", help="Flag to use GPU for TTS")
     parser.add_argument("--output_file", type=str, default="output.wav", help="Output file for TTS")
     parser.add_argument("--archive", type=str, default="archive", help="Archive directory for TTS")
-    parser.add_argument("--coqui_model", type=str, default="tts_models/multilingual/multi-dataset/your_tts", help="Model name for Coqui-AI TTS")
     parser.add_argument("--whisper_model", type=str, default="base", help="Whisper model for STT")
     parser.add_argument("--debug", action="store_true", help="Toggle debugging mode")
     
@@ -42,10 +40,8 @@ def main():
     if args.command in ["speak", "listen", "transcribe"]:
         # Initialize Linguist with the provided arguments
         linguist = Linguist(
-            use_gpu=args.use_gpu,
             output_file=args.output_file,
             archive=args.archive,
-            coqui_model=args.coqui_model,
             whisper_model=args.whisper_model
         )
 
@@ -54,10 +50,8 @@ def main():
         # Handle commands
         if args.command == "speak":
             # Set language and speaker if provided
-            if args.language:
-                linguist.set_language(args.language)
             if args.speaker:
-                linguist.set_speaker(args.speaker)
+                linguist.set_voice(args.speaker)
 
             # Generate speech from text
             linguist.speak(args.text or "Hello, World! You seeme to have forgotten to provide text to speak.", tag=args.tag)
