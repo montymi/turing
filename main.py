@@ -1,5 +1,5 @@
 import argparse
-from linguist import Linguist
+from src.linguist import Linguist
 import logging
 
 def main():

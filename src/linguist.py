@@ -3,7 +3,7 @@ import shutil
 import subprocess
 import os
 import sys
-from microphone import Microphone
+from .microphone import Microphone
 from datetime import datetime
 import whisper
 import warnings
